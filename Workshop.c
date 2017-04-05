@@ -1,106 +1,140 @@
 /*
-  Blank Simple Project.c
-  http://learn.parallax.com/propeller-c-tutorials 
+  Santa's Workshop program.
+  
+  TODO:
+   -check all pins
+   -separate into cogs
 */
 #include "simpletools.h"                      // Include simple tools
-#include "servo.h"
-#include "servodiffdrive.h"
+#include "servo.h" 
 
-//speeds
-#define marbleLiftSpeed 50
-#define upOverrideSpeed 70
-#define downOverrideSpeed -60
+//BUTTON PINS
+#define marble 9
+#define train 11
+#define shooter 13
+#define tree 15
+
+//SERVO PINS
+//FIND BETTER NAMES FOR GALLERY SERVOS ONCE ALL IS ASSEMBLED AND READY FOR TESTING
+#define marbleServ 17
+#define trainServ 16
+#define galleryServA 15 
+#define galleryServB 14
+#define treeServ 13
+
+//SERVO STEP SIZES
+#define treeStepSize 20
+
+//SERVO SPEEDS
+#define marbleSpeed 50
 #define trainSpeed -35
-#define gallerySpeed 50
-#define treeSpeed 50
+#define galleryWheelSpeed 20 //needs to be determined via testing
 
-//servo pins
-#define marbleLift_Pin 17
-#define train_Pin 12
-#define tree_Pin 10 //CHECK 
-#define gallery_Pin 9 //CHECK
+//SERVO ANGLES
+#define treeAngleA 0
+#define treeAngleB 1800
 
-//button pins
-#define upOverrideButton_Pin 15
-#define trainButton_Pin 10 //CHECK
-#define galleryButton_Pin 6 //CHECK
-//#define musicButton_Pin 5 //CHECK
-
-/*
- * TODO:
- *  - add m. switch (gallery)
- *  - check speeds
- *  - check pins
- *  - music & WAV files
- */
+int marbleToggle;
+int trainToggle;
+int shooterButton;
+int treeButton;
+String state;  
 
 int main()                                    // Main function
-{
-  //declare buttons
-  int upOverrideButton;
-  int trainButton;
-  int galleryButton; 
-  int musicButton; 
-   
+{ 
+  state = ""; 
   while(1)
   {
-    //init buttons
-    upOverrideButton = input(upOverrideButton_Pin);    
-    trainButton = input(trainButton_Pin);
-    galleryButton = input(trainButton_Pin);
-    //musicButton = input(musicButton_Pin); 
-     
-    // override normal speed, "up"
-    if(upOverrideButton == 1) 
-    { 
-      operateMarbleLiftOvrr();  
-    }
-    //enable train
-    else if(trainButton == 1) 
+    checkInputs(marble, train, shooter, tree); 
+    
+    if(checkInputs() == 1)
     {
-      operateTrain();  
+      operateMabrleLift();    
+      state = "marbleLift";    
     }
-    else if(galleryButton == 1) 
+    if(checkInputs() == 2) 
+    {
+      operateTrain(); 
+      state = "train"; 
+    }
+    if(checkInputs() == 3) 
     {
       operateGallery(); 
-    } 
-    //run marble lift cont., tree cont. 
-    else 
-    {
-      normalOperations();  
+      state = "gallery";
     }
+    if(checkInputs() == 4)
+    {
+      operateTree(); 
+      state = "tree"; 
+    }
+    if(checkInputs() == 5) 
+    {
+      systemHalt();   
+      state = "halted"; 
+    }
+    
+    print("marble: %d || train: %d || shooter: %d || tree: %d || state: %s \n",  marbleToggle, trainToggle, shooterButton, treeButton, state); 
+    pause(100); 
   }  
 }
 
-void operateMarbleLiftOvrr() 
+int checkInputs(int marbleInput, int trainInput, int shooterInput, int treeInput) 
 {
-  servo_speed(marbleLift_Pin, -upOverrideSpeed); 
-  servo_disable(train_Pin);
-  servo_disable(tree_Pin); 
-  servo_disable(gallery_Pin); 
-}
-
-void operateTrain() 
-{
-  servo_speed(train_Pin, trainSpeed); 
-  servo_speed(marbleLift_Pin, marbleLiftSpeed); 
-  servo_speed(tree_Pin, treeSpeed); 
-}
-
-void operateGallery() 
-{
-  servo_speed(gallery_Pin, gallerySpeed); 
-  servo_speed(marbleLift_Pin, marbleLiftSpeed): 
+  marbleToggle = input(marbleInput);
+  trainToggle = input(trainInput);
+  shooterButton = input(shooterInput);
+  treeButton = input(treeInput); 
   
-  //m. switch
-  if(5 == 3)
+  if(marbleToggle == 1) 
   {
-    //do something
+    return 1; 
+  }
+  if(trainToggle == 1) 
+  {
+    return 2; 
+  }
+  if(shooterButton == 1) 
+  {
+    return 3; 
+  }
+  if(tree == 1) 
+  {
+    return 4;   
+  }
+  else 
+  {
+    return 5;   
   }
 }
 
-void normalOperations() 
+//methods handling each system
+void operateMarbleLift() 
 {
-  servo_speed(marbleLift_Pin, marbleLiftSpeed);
-  servo_speed(tree_Pin, treeSpeed); 
+  servo_speed(marbleServ, marbleSpeed); 
+}
+void operateTrain() 
+{
+  servo_speed(trainServ, trainSpeed); 
+}
+void operateGallery() 
+{
+  //need to work out logically
+}
+//use set ramp functions to handle how slow the tree rotates
+void operateTree() 
+{
+  servo_setramp(treeServ, treeStepSize); 
+  
+  servo_angle(treeServ, treeAngleA);
+  pause(300); 
+  servo_angle(treeServ, treeAngleB); 
+  pause(300); 
+}
+void systemHalt() 
+{
+  servo_disable(marbleServ); 
+  servo_disable(trainServ);
+  servo_disable(galleryServA); 
+  servo_disable(galleryServB); 
+  servo_disable(treeServ); 
 }
