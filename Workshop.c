@@ -9,10 +9,10 @@
 #include "servo.h" 
 
 //BUTTON PINS
-#define marble 9
-#define train 11
-#define shooter 13
-#define tree 15
+#define marble 15
+#define train 13
+#define shooter 11
+#define tree 9
 
 //SERVO PINS
 //FIND BETTER NAMES FOR GALLERY SERVOS ONCE ALL IS ASSEMBLED AND READY FOR TESTING
@@ -26,7 +26,7 @@
 #define treeStepSize 20
 
 //SERVO SPEEDS
-#define marbleSpeed 50
+#define marbleSpeed 40
 #define trainSpeed -35
 #define galleryWheelSpeed 20 //needs to be determined via testing
 
@@ -36,105 +36,115 @@
 
 int marbleToggle;
 int trainToggle;
-int shooterButton;
+int galleryButton;
 int treeButton;
-String state;  
+
+void handleOperations(int marbleInput, int trainInput, int shooterInput, int treeInput);
+void operateMarbleLift(void); 
+void operateTrain(void);
+void operateGallery(void);
+void operateTree(void); 
+void systemHalt(void); 
+void setMotorSpeeds(void); 
 
 int main()                                    // Main function
 { 
-  state = ""; 
   while(1)
   {
-    checkInputs(marble, train, shooter, tree); 
-    
-    if(checkInputs() == 1)
-    {
-      operateMabrleLift();    
-      state = "marbleLift";    
-    }
-    if(checkInputs() == 2) 
-    {
-      operateTrain(); 
-      state = "train"; 
-    }
-    if(checkInputs() == 3) 
-    {
-      operateGallery(); 
-      state = "gallery";
-    }
-    if(checkInputs() == 4)
-    {
-      operateTree(); 
-      state = "tree"; 
-    }
-    if(checkInputs() == 5) 
-    {
-      systemHalt();   
-      state = "halted"; 
-    }
-    
-    print("marble: %d || train: %d || shooter: %d || tree: %d || state: %s \n",  marbleToggle, trainToggle, shooterButton, treeButton, state); 
-    pause(100); 
+    //setMotorSpeeds(); 
+    handleOperations(marble, train, shooter, tree); 
+    pause(200); 
+    print("%c", CLREOL); 
   }  
 }
-
-int checkInputs(int marbleInput, int trainInput, int shooterInput, int treeInput) 
+void handleOperations(int marbleInput, int trainInput, int shooterInput, int treeInput) 
 {
+  //char state = 'h'; 
   marbleToggle = input(marbleInput);
   trainToggle = input(trainInput);
-  shooterButton = input(shooterInput);
+  galleryButton = input(shooterInput);
   treeButton = input(treeInput); 
+  
+  int total = 0; 
+  total = marbleToggle + trainToggle + galleryButton + treeButton; 
   
   if(marbleToggle == 1) 
   {
-    return 1; 
+    operateMarbleLift();
+    //servo_speed(marbleServ, marbleSpeed); 
+  }
+  else if(marbleToggle == 0) 
+  {
+    servo_disable(marbleServ);   
   }
   if(trainToggle == 1) 
   {
-    return 2; 
+    operateTrain();
   }
-  if(shooterButton == 1) 
+  else if(trainToggle == 0) 
   {
-    return 3; 
+    servo_disable(trainServ);   
   }
-  if(tree == 1) 
+  if(galleryButton == 1) 
   {
-    return 4;   
+    operateGallery();
   }
-  else 
+  else if(galleryButton == 0) 
   {
-    return 5;   
+    // add more  
+  }    
+  if(treeButton == 1) 
+  {
+    operateTree();
   }
+  else if(treeButton == 0) 
+  {
+    servo_disable(treeServ);   
+  }
+  /*else if(total == 0)
+  {
+    systemHalt();  
+  } */
+  print("%cmarble: %d || train: %d || shooter: %d || tree: %d || total: %d\n",  HOME, marbleToggle, trainToggle, galleryButton, treeButton, total);  
 }
 
 //methods handling each system
 void operateMarbleLift() 
 {
-  servo_speed(marbleServ, marbleSpeed); 
+  print("marble method called \n"); 
+  servo_speed(marbleServ, 70); 
 }
 void operateTrain() 
 {
+  print("train method called \n"); 
   servo_speed(trainServ, trainSpeed); 
 }
 void operateGallery() 
 {
+  print("gallery method called \n"); 
   //need to work out logically
 }
 //use set ramp functions to handle how slow the tree rotates
 void operateTree() 
 {
-  servo_setramp(treeServ, treeStepSize); 
-  
+  int pauseTime = 1200; 
+  print("tree method called \n"); 
   servo_angle(treeServ, treeAngleA);
-  pause(300); 
+  pause(pauseTime); 
   servo_angle(treeServ, treeAngleB); 
-  pause(300); 
+  pause(pauseTime);
 }
 void systemHalt() 
 {
+  print("system halted \n");
   servo_disable(marbleServ); 
   servo_disable(trainServ);
   servo_disable(galleryServA); 
   servo_disable(galleryServB); 
   servo_disable(treeServ); 
+}
+
+void setMotorSpeeds() 
+{
+  servo_setramp(treeServ, treeStepSize); 
 }
