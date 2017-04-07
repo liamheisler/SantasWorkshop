@@ -2,8 +2,10 @@
   Santa's Workshop program.
   
   TODO:
-   -check all pins
+   -check all pins (DONE)
    -separate into cogs
+   -install buttons on control panel & wire all
+   -better method distribution of tasks
 */
 #include "simpletools.h"                      // Include simple tools
 #include "servo.h" 
@@ -33,6 +35,9 @@
 //SERVO ANGLES
 #define treeAngleA 0
 #define treeAngleB 1800
+
+//MISC VARS
+#define pauseTime 1200
 
 int marbleToggle;
 int trainToggle;
@@ -126,14 +131,15 @@ void operateGallery()
 }
 //use set ramp functions to handle how slow the tree rotates
 void operateTree() 
-{
-  int pauseTime = 1200; 
+{ 
   print("tree method called \n"); 
   servo_angle(treeServ, treeAngleA);
   pause(pauseTime); 
   servo_angle(treeServ, treeAngleB); 
   pause(pauseTime);
 }
+//only use when/if kill switch is installed
+//if we're able to, we can use the power button as kill switch and power control
 void systemHalt() 
 {
   print("system halted \n");
