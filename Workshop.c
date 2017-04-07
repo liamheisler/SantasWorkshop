@@ -6,6 +6,8 @@
    -separate into cogs
    -install buttons on control panel & wire all
    -better method distribution of tasks
+   -use integer return in handleOps method, then check for 
+        these returns in the main or separate method -- ideally separate
 */
 #include "simpletools.h"                      // Include simple tools
 #include "servo.h" 
