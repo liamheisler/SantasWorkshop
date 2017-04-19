@@ -51,7 +51,7 @@ void testSeq()
 {
   resetAngle();
   pause(50); 
-  servo_angle(12, 900);v.p 
+  servo_angle(12, 900); 
   pause(50); 
   
   servo_speed(galleryWheelServo, galleryWheelSpeed); 
