@@ -139,12 +139,12 @@ void operateGallery()
 //use set ramp functions to handle how slow the tree rotates
 void operateTree() 
 {
-  int pauseTime = 1200; 
+  int pauseTime = 700; 
   print("tree method called \n"); 
   servo_angle(treeServo, treeAngleA);
   pause(pauseTime); 
   servo_angle(treeServo, treeAngleB); 
-  //pause(pauseTime);
+  pause(pauseTime);
 }
 void systemHalt() 
 {
